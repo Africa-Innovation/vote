@@ -6,6 +6,10 @@ use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\AdminController;
 
+// Vérification du paiement du vote
+Route::get('/vote/payment', [VoteController::class, 'paymentForm'])->name('vote.payment');
+Route::post('/vote/payment', [VoteController::class, 'paymentVerify'])->name('vote.payment.verify');
+
 // Reprendre la vérification de paiement d'une candidature en attente
 Route::get('/candidater/reprendre', [CandidateController::class, 'resumeForm'])->name('candidate.resume.form');
 Route::post('/candidater/reprendre', [CandidateController::class, 'resume'])->name('candidate.resume');

@@ -15,10 +15,6 @@
     <form method="POST" action="{{ route('vote.submit', $candidate->id) }}">
         @csrf
         <div class="mb-3">
-            <label for="voter_phone" class="form-label">Numéro du votant</label>
-            <input type="text" class="form-control" id="voter_phone" name="voter_phone" required>
-        </div>
-        <div class="mb-3">
             <label for="payment_phone" class="form-label">Numéro utilisé pour le paiement</label>
             <input type="text" class="form-control" id="payment_phone" name="payment_phone" required>
             <div class="form-text">Saisis ici le numéro avec lequel tu as effectué le paiement USSD.</div>
@@ -41,7 +37,10 @@
             <div class="form-text">Clique sur le bouton pour ouvrir le code USSD sur ton téléphone, effectue le paiement, puis reviens saisir le numéro utilisé pour valider.</div>
         </div>
         <button type="submit" class="btn btn-success">Valider mon vote</button>
-    </form>
+</form>
+    <div class="mt-4">
+        <a href="{{ route('vote.payment') }}" class="btn btn-link">Déjà payé ? Vérifier le paiement de mon vote</a>
+    </div>
 </div>
 <script>
     const operatorSelect = document.getElementById('operator');

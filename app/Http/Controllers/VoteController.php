@@ -7,9 +7,66 @@ use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class VoteController extends Controller
 {
+    // Affiche la page de vérification du paiement du vote
+    public function paymentForm()
+    {
+        $candidateId = session('pending_vote_candidate_id');
+        $amount = session('pending_vote_amount');
+        $operator = session('pending_vote_operator');
+        $candidate = Candidate::find($candidateId);
+        if (!$candidate) {
+            return redirect()->route('vote.index')->withErrors(['expired' => 'Session expirée, veuillez recommencer.']);
+        }
+        return view('vote.payment', compact('candidate', 'amount', 'operator'));
+    }
+
+    // Vérifie le paiement et enregistre le vote
+    public function paymentVerify(Request $request)
+    {
+        $request->validate([
+            'payment_phone' => 'required',
+        ]);
+        $candidateId = session('pending_vote_candidate_id');
+        $amount = session('pending_vote_amount');
+        $operator = session('pending_vote_operator');
+        $candidate = Candidate::find($candidateId);
+        if (!$candidate) {
+            return redirect()->route('vote.index')->withErrors(['expired' => 'Session expirée, veuillez recommencer.']);
+        }
+
+        $isPaid = $this->verifierPaiement(
+            $request->payment_phone,
+            $amount,
+            $operator === 'orange'
+        );
+
+        if (!$isPaid) {
+            return back()->withErrors(['payment' => 'Paiement non validé.']);
+        }
+
+        DB::transaction(function () use ($candidate, $request, $amount, $operator) {
+            Vote::create([
+                'candidate_id' => $candidate->id,
+                'amount' => $amount,
+                'operator' => $operator,
+                'payment_status' => 'success',
+                'voter_phone' => $request->payment_phone,
+            ]);
+            Payment::create([
+                'phone' => $request->payment_phone,
+                'amount' => $amount,
+                'type' => 'vote',
+                'operator' => $operator,
+                'status' => 'success',
+            ]);
+        });
+        session()->forget(['pending_vote_candidate_id', 'pending_vote_amount', 'pending_vote_operator', 'pending_vote_payment_phone']);
+        return redirect()->route('vote.index')->with('success', 'Vote enregistré avec succès !');
+    }
     // Affiche la liste des candidats pour voter
     public function index()
     {
@@ -28,7 +85,6 @@ class VoteController extends Controller
     public function vote(Request $request, $id)
     {
         $request->validate([
-            'voter_phone' => 'required',
             'payment_phone' => 'required',
             'operator' => 'required|in:orange,moov',
             'amount' => 'required|numeric|min:1',
@@ -36,36 +92,15 @@ class VoteController extends Controller
 
         $candidate = Candidate::findOrFail($id);
 
-        // Vérifier le paiement via l'API externe
-        $isPaid = $this->verifierPaiement(
-            $request->payment_phone,
-            $request->amount,
-            $request->operator === 'orange'
-        );
+        // Stocker les infos du vote en session pour la vérification paiement
+        session([
+            'pending_vote_candidate_id' => $candidate->id,
+            'pending_vote_amount' => $request->amount,
+            'pending_vote_operator' => $request->operator,
+            'pending_vote_payment_phone' => $request->payment_phone,
+        ]);
 
-        if (!$isPaid) {
-            return back()->withErrors(['payment' => 'Paiement non validé.']);
-        }
-
-        // Enregistrer le vote et le paiement
-        DB::transaction(function () use ($request, $candidate) {
-            Vote::create([
-                'candidate_id' => $candidate->id,
-                'voter_phone' => $request->voter_phone,
-                'amount' => $request->amount,
-                'operator' => $request->operator,
-                'payment_status' => 'success',
-            ]);
-            Payment::create([
-                'phone' => $request->payment_phone,
-                'amount' => $request->amount,
-                'type' => 'vote',
-                'operator' => $request->operator,
-                'status' => 'success',
-            ]);
-        });
-
-        return redirect()->route('vote.index')->with('success', 'Vote enregistré avec succès !');
+        return redirect()->route('vote.payment');
     }
 
     // Vérifie le paiement via l'API externe
@@ -86,6 +121,11 @@ class VoteController extends Controller
         ];
 
         $response = Http::post($url, $body);
+    Log::info('API paiement vote', [
+            'body' => $body,
+            'response_status' => $response->status(),
+            'response_json' => $response->json(),
+        ]);
         return $response->ok() && $response->json('success') === true;
     }
 }
