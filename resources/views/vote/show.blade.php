@@ -27,8 +27,10 @@
             <div class="form-text" id="payment-phone-help">Saisis ici le numéro avec lequel tu as effectué le paiement USSD.</div>
         </div>
         <div class="mb-3">
-            <label for="amount" class="form-label">Montant du vote</label>
-            <input type="number" class="form-control" id="amount" name="amount" min="1" required>
+            <label class="form-label">Montant du vote</label>
+            <div class="form-control bg-light" readonly>
+                {{ \App\Models\Setting::getValue('vote_amount', 100) }} FCFA
+            </div>
         </div>
         <div class="mb-3">
             <strong>Code USSD à composer :</strong>
@@ -44,18 +46,17 @@
 </div>
 <script>
     const operatorSelect = document.getElementById('operator');
-    const amountInput = document.getElementById('amount');
     const ussdDiv = document.getElementById('ussd-code');
     const paymentPhoneHelp = document.getElementById('payment-phone-help');
+    const voteAmount = {{ \App\Models\Setting::getValue('vote_amount', 100) }};
     function updateUSSD() {
         const op = operatorSelect.value;
-        const amount = amountInput.value || 'MONTANT';
         let ussd = '';
         if(op === 'orange') {
-            ussd = `*144*10*05690560*${amount}#`;
+            ussd = `*144*10*05690560*${voteAmount}#`;
             paymentPhoneHelp.textContent = 'Saisis ici le numéro Orange avec lequel tu souhaites effectuer le paiement USSD.';
         } else {
-            ussd = `*555*4*1*03301404*${amount}#`;
+            ussd = `*555*4*1*03301404*${voteAmount}#`;
             paymentPhoneHelp.textContent = 'Saisis ici le numéro Moov avec lequel tu souhaites effectuer le paiement USSD.';
         }
         ussdDiv.textContent = ussd;
@@ -64,7 +65,6 @@
         ussdLink.href = `tel:${encodeURIComponent(ussd)}`;
     }
     operatorSelect.addEventListener('change', updateUSSD);
-    amountInput.addEventListener('input', updateUSSD);
     updateUSSD();
 </script>
 @endsection

@@ -51,7 +51,6 @@ class CandidateController extends Controller
             'phone' => 'required|unique:candidates,phone',
             'photo' => 'nullable|image',
             'operator' => 'required|in:orange,moov',
-            'amount' => 'required|numeric|min:1',
         ]);
 
         if (Candidate::count() >= 75) {
@@ -66,8 +65,10 @@ class CandidateController extends Controller
             'status' => 'pending',
         ]);
 
+        $amount = \App\Models\Setting::getValue('candidature_amount', 1000); // 1000 par défaut
+
         // Stocker les infos nécessaires en session pour la vérification paiement
-        session(['pending_candidate_id' => $candidate->id, 'pending_amount' => $request->amount, 'pending_operator' => $request->operator]);
+        session(['pending_candidate_id' => $candidate->id, 'pending_amount' => $amount, 'pending_operator' => $request->operator]);
 
         return redirect()->route('candidate.payment');
     }

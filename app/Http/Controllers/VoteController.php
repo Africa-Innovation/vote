@@ -87,15 +87,15 @@ class VoteController extends Controller
         $request->validate([
             'payment_phone' => 'required',
             'operator' => 'required|in:orange,moov',
-            'amount' => 'required|numeric|min:1',
         ]);
 
         $candidate = Candidate::findOrFail($id);
+        $amount = \App\Models\Setting::getValue('vote_amount', 100); // 100 par défaut
 
         // Stocker les infos du vote en session pour la vérification paiement
         session([
             'pending_vote_candidate_id' => $candidate->id,
-            'pending_vote_amount' => $request->amount,
+            'pending_vote_amount' => $amount,
             'pending_vote_operator' => $request->operator,
             'pending_vote_payment_phone' => $request->payment_phone,
         ]);

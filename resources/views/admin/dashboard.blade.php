@@ -3,6 +3,27 @@
 @section('content')
 <div class="container">
     <h1>Tableau de bord admin</h1>
+
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    <div class="mb-4">
+        <form method="POST" action="{{ route('admin.amounts.update') }}" class="row g-3 align-items-end">
+            @csrf
+            <div class="col-auto">
+                <label for="vote_amount" class="form-label">Montant du vote</label>
+                <input type="number" class="form-control" id="vote_amount" name="vote_amount" value="{{ $voteAmount }}" min="1" required>
+            </div>
+            <div class="col-auto">
+                <label for="candidature_amount" class="form-label">Montant de la candidature</label>
+                <input type="number" class="form-control" id="candidature_amount" name="candidature_amount" value="{{ $candidatureAmount }}" min="1" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+            </div>
+        </form>
+    </div>
     <table class="table table-bordered">
         <thead>
             <tr>

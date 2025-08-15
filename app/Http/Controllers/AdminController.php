@@ -10,7 +10,21 @@ class AdminController extends Controller
     public function dashboard()
     {
         $candidates = Candidate::withCount('votes')->orderByDesc('votes_count')->get();
-        return view('admin.dashboard', compact('candidates'));
+        $voteAmount = \App\Models\Setting::getValue('vote_amount', 100);
+        $candidatureAmount = \App\Models\Setting::getValue('candidature_amount', 1000);
+        return view('admin.dashboard', compact('candidates', 'voteAmount', 'candidatureAmount'));
+    }
+
+    // Met à jour les montants de vote et de candidature
+    public function updateAmounts(Request $request)
+    {
+        $request->validate([
+            'vote_amount' => 'required|numeric|min:1',
+            'candidature_amount' => 'required|numeric|min:1',
+        ]);
+        \App\Models\Setting::setValue('vote_amount', $request->vote_amount);
+        \App\Models\Setting::setValue('candidature_amount', $request->candidature_amount);
+        return redirect()->route('admin.dashboard')->with('success', 'Montants mis à jour.');
     }
 
     // Change le statut d'un candidat (actif <-> attente)
