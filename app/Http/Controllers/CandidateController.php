@@ -9,6 +9,30 @@ use Illuminate\Support\Facades\Http;
 
 class CandidateController extends Controller
 {
+    // Formulaire pour reprendre la vérification via téléphone
+    public function resumeForm()
+    {
+        return view('candidate.resume');
+    }
+
+    // Traite la reprise de vérification
+    public function resume(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required',
+        ]);
+        $candidate = Candidate::where('phone', $request->phone)->where('status', 'pending')->first();
+        if (!$candidate) {
+            return back()->withErrors(['phone' => 'Aucune candidature en attente trouvée pour ce numéro.']);
+        }
+        // On suppose que le montant et l'opérateur sont stockés dans le dernier paiement associé
+        $payment = $candidate->payments()->where('type', 'candidature')->latest()->first();
+        if (!$payment) {
+            return back()->withErrors(['phone' => 'Aucun paiement associé trouvé pour ce numéro.']);
+        }
+        session(['pending_candidate_id' => $candidate->id, 'pending_amount' => $payment->amount, 'pending_operator' => $payment->operator]);
+        return redirect()->route('candidate.payment');
+    }
     // Affiche le formulaire de candidature
     public function create()
     {
@@ -25,7 +49,6 @@ class CandidateController extends Controller
         $request->validate([
             'name' => 'required',
             'phone' => 'required|unique:candidates,phone',
-            'payment_phone' => 'required',
             'photo' => 'nullable|image',
             'operator' => 'required|in:orange,moov',
             'amount' => 'required|numeric|min:1',
@@ -35,34 +58,71 @@ class CandidateController extends Controller
             return back()->withErrors(['limit' => 'Le nombre maximum de candidatures est atteint.']);
         }
 
-        // Vérifier le paiement via l'API externe
+        $photoPath = $request->file('photo') ? $request->file('photo')->store('candidates', 'public') : null;
+        $candidate = Candidate::create([
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'photo' => $photoPath,
+            'status' => 'pending',
+        ]);
+
+        // Stocker les infos nécessaires en session pour la vérification paiement
+        session(['pending_candidate_id' => $candidate->id, 'pending_amount' => $request->amount, 'pending_operator' => $request->operator]);
+
+        return redirect()->route('candidate.payment');
+    }
+
+    // Affiche la page de vérification du paiement
+    public function paymentForm()
+    {
+        $candidateId = session('pending_candidate_id');
+        $amount = session('pending_amount');
+        $operator = session('pending_operator');
+        $candidate = Candidate::find($candidateId);
+        if (!$candidate) {
+            return redirect()->route('candidate.create')->withErrors(['expired' => 'Session expirée, veuillez recommencer.']);
+        }
+        return view('candidate.payment', compact('candidate', 'amount', 'operator'));
+    }
+
+    // Vérifie le paiement et active la candidature
+    public function paymentVerify(Request $request)
+    {
+        $request->validate([
+            'payment_phone' => 'required',
+        ]);
+        $candidateId = session('pending_candidate_id');
+        $amount = session('pending_amount');
+        $operator = session('pending_operator');
+        $candidate = Candidate::find($candidateId);
+        if (!$candidate) {
+            return redirect()->route('candidate.create')->withErrors(['expired' => 'Session expirée, veuillez recommencer.']);
+        }
+
         $isPaid = $this->verifierPaiement(
             $request->payment_phone,
-            $request->amount,
-            $request->operator === 'orange'
+            $amount,
+            $operator === 'orange'
         );
 
         if (!$isPaid) {
             return back()->withErrors(['payment' => 'Paiement non validé.']);
         }
 
-        DB::transaction(function () use ($request) {
-            $photoPath = $request->file('photo') ? $request->file('photo')->store('candidates', 'public') : null;
-            Candidate::create([
-                'name' => $request->name,
-                'phone' => $request->phone,
-                'photo' => $photoPath,
-            ]);
+        DB::transaction(function () use ($candidate, $request, $amount, $operator) {
+            $candidate->status = 'active';
+            $candidate->save();
             Payment::create([
                 'phone' => $request->payment_phone,
-                'amount' => $request->amount,
+                'amount' => $amount,
                 'type' => 'candidature',
-                'operator' => $request->operator,
+                'operator' => $operator,
                 'status' => 'success',
+                'candidate_id' => $candidate->id,
             ]);
         });
-
-        return redirect()->route('vote.index')->with('success', 'Candidature enregistrée avec succès !');
+        session()->forget(['pending_candidate_id', 'pending_amount', 'pending_operator']);
+        return redirect()->route('vote.index')->with('success', 'Candidature validée avec succès !');
     }
 
     // Vérifie le paiement via l'API externe

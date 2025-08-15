@@ -13,7 +13,7 @@ class VoteController extends Controller
     // Affiche la liste des candidats pour voter
     public function index()
     {
-        $candidates = Candidate::withCount('votes')->get();
+    $candidates = Candidate::where('status', 'active')->withCount('votes')->get();
         return view('vote.index', compact('candidates'));
     }
 

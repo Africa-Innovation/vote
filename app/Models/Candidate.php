@@ -9,11 +9,16 @@ class Candidate extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'photo', 'phone',
+        'name', 'photo', 'phone', 'status',
     ];
 
     public function votes()
     {
         return $this->hasMany(Vote::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 }

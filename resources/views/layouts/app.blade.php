@@ -7,6 +7,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+    @hasSection('hide_navbar')
+        {{-- Navbar masquée --}}
+    @else
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
         <div class="container">
             <a class="navbar-brand" href="{{ route('vote.index') }}">Vote App</a>
@@ -16,6 +19,7 @@
             </ul>
         </div>
     </nav>
+    @endif
     <main>
         @yield('content')
     </main>

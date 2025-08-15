@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->string('name');
             $table->string('photo')->nullable();
             $table->string('phone')->unique();
+            $table->string('status')->default('pending'); // pending, active
             $table->timestamps();
         });
     }

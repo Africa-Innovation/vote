@@ -50,6 +50,9 @@
         </div>
         <button type="submit" class="btn btn-primary">Valider ma candidature</button>
     </form>
+    <div class="mt-4">
+        <a href="{{ route('candidate.resume.form') }}" class="btn btn-link">Déjà candidat ? Reprendre la vérification de paiement</a>
+    </div>
 </div>
 <script>
     const operatorSelect = document.getElementById('operator');
