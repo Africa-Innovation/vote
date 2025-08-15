@@ -23,11 +23,6 @@
             <input type="text" class="form-control" id="phone" name="phone" required>
         </div>
         <div class="mb-3">
-            <label for="payment_phone" class="form-label">Numéro utilisé pour le paiement</label>
-            <input type="text" class="form-control" id="payment_phone" name="payment_phone" required>
-            <div class="form-text">Saisis ici le numéro avec lequel tu as effectué le paiement USSD.</div>
-        </div>
-        <div class="mb-3">
             <label for="photo" class="form-label">Photo (optionnel)</label>
             <input type="file" class="form-control" id="photo" name="photo">
         </div>
@@ -37,6 +32,11 @@
                 <option value="orange">Orange</option>
                 <option value="moov">Moov</option>
             </select>
+        </div>
+        <div class="mb-3">
+            <label for="payment_phone" class="form-label">Numéro utilisé pour le paiement</label>
+            <input type="text" class="form-control" id="payment_phone" name="payment_phone" required>
+            <div class="form-text" id="payment-phone-help">Saisis ici le numéro avec lequel tu as effectué le paiement USSD.</div>
         </div>
         <div class="mb-3">
             <label for="amount" class="form-label">Montant de la candidature</label>

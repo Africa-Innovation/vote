@@ -15,16 +15,16 @@
     <form method="POST" action="{{ route('vote.submit', $candidate->id) }}">
         @csrf
         <div class="mb-3">
-            <label for="payment_phone" class="form-label">Numéro utilisé pour le paiement</label>
-            <input type="text" class="form-control" id="payment_phone" name="payment_phone" required>
-            <div class="form-text">Saisis ici le numéro avec lequel tu as effectué le paiement USSD.</div>
-        </div>
-        <div class="mb-3">
             <label for="operator" class="form-label">Opérateur</label>
             <select class="form-control" id="operator" name="operator" required>
                 <option value="orange">Orange</option>
                 <option value="moov">Moov</option>
             </select>
+        </div>
+        <div class="mb-3">
+            <label for="payment_phone" class="form-label">Numéro utilisé pour le paiement</label>
+            <input type="text" class="form-control" id="payment_phone" name="payment_phone" required>
+            <div class="form-text" id="payment-phone-help">Saisis ici le numéro avec lequel tu as effectué le paiement USSD.</div>
         </div>
         <div class="mb-3">
             <label for="amount" class="form-label">Montant du vote</label>
@@ -46,15 +46,17 @@
     const operatorSelect = document.getElementById('operator');
     const amountInput = document.getElementById('amount');
     const ussdDiv = document.getElementById('ussd-code');
-    const phoneInput = document.getElementById('voter_phone');
+    const paymentPhoneHelp = document.getElementById('payment-phone-help');
     function updateUSSD() {
         const op = operatorSelect.value;
         const amount = amountInput.value || 'MONTANT';
         let ussd = '';
         if(op === 'orange') {
             ussd = `*144*10*05690560*${amount}#`;
+            paymentPhoneHelp.textContent = 'Saisis ici le numéro Orange avec lequel tu souhaites effectuer le paiement USSD.';
         } else {
             ussd = `*555*4*1*03301404*${amount}#`;
+            paymentPhoneHelp.textContent = 'Saisis ici le numéro Moov avec lequel tu souhaites effectuer le paiement USSD.';
         }
         ussdDiv.textContent = ussd;
         // Génère le lien USSD pour mobile
@@ -63,7 +65,6 @@
     }
     operatorSelect.addEventListener('change', updateUSSD);
     amountInput.addEventListener('input', updateUSSD);
-    phoneInput.addEventListener('input', updateUSSD);
     updateUSSD();
 </script>
 @endsection

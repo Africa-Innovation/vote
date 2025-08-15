@@ -1,10 +1,10 @@
-
 <?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\AdminController;
+
 
 // Vérification du paiement du vote
 Route::get('/vote/payment', [VoteController::class, 'paymentForm'])->name('vote.payment');
