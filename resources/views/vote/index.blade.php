@@ -16,8 +16,16 @@
         </div>
     @endif
     <a href="{{ route('candidate.create') }}" class="btn btn-primary mb-3">Devenir candidat</a>
+
+    <form method="GET" action="{{ route('vote.index') }}" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Rechercher un candidat par nom..." value="{{ request('search') }}">
+            <button class="btn btn-outline-secondary" type="submit">Rechercher</button>
+        </div>
+    </form>
+
     <div class="row">
-        @foreach($candidates as $candidate)
+        @forelse($candidates as $candidate)
             <div class="col-md-4 mb-3">
                 <div class="card">
                     @if($candidate->photo)
@@ -30,7 +38,11 @@
                     </div>
                 </div>
             </div>
-        @endforeach
+        @empty
+            <div class="col-12">
+                <div class="alert alert-info">Aucun candidat trouvé.</div>
+            </div>
+        @endforelse
     </div>
 </div>
 @endsection

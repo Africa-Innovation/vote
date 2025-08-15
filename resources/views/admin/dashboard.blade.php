@@ -24,6 +24,12 @@
             </div>
         </form>
     </div>
+    <form method="GET" action="{{ route('admin.dashboard') }}" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Rechercher un candidat par nom..." value="{{ request('search') }}">
+            <button class="btn btn-outline-secondary" type="submit">Rechercher</button>
+        </div>
+    </form>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -36,7 +42,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($candidates as $candidate)
+            @forelse($candidates as $candidate)
                 <tr>
                     <td>{{ $candidate->name }}</td>
                     <td>{{ $candidate->phone }}</td>
@@ -62,7 +68,11 @@
                         </form>
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="6" class="text-center">Aucun candidat trouvé.</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
 </div>

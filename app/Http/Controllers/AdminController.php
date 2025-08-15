@@ -7,9 +7,14 @@ use Illuminate\Http\Request;
 class AdminController extends Controller
 {
     // Affiche la liste de tous les candidats (actifs ou non) avec leur nombre de votes
-    public function dashboard()
+    public function dashboard(Request $request)
     {
-        $candidates = Candidate::withCount('votes')->orderByDesc('votes_count')->get();
+        $query = Candidate::withCount('votes')->orderByDesc('votes_count');
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('name', 'like', "%$search%");
+        }
+        $candidates = $query->get();
         $voteAmount = \App\Models\Setting::getValue('vote_amount', 100);
         $candidatureAmount = \App\Models\Setting::getValue('candidature_amount', 1000);
         return view('admin.dashboard', compact('candidates', 'voteAmount', 'candidatureAmount'));

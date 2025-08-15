@@ -68,9 +68,14 @@ class VoteController extends Controller
         return redirect()->route('vote.index')->with('success', 'Vote enregistré avec succès !');
     }
     // Affiche la liste des candidats pour voter
-    public function index()
+    public function index(Request $request)
     {
-    $candidates = Candidate::where('status', 'active')->withCount('votes')->get();
+        $query = Candidate::where('status', 'active')->withCount('votes');
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('name', 'like', "%$search%");
+        }
+        $candidates = $query->get();
         return view('vote.index', compact('candidates'));
     }
 
