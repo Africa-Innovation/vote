@@ -27,3 +27,4 @@ Route::post('/candidater', [CandidateController::class, 'store'])->name('candida
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 Route::post('/admin/amounts/update', [AdminController::class, 'updateAmounts'])->name('admin.amounts.update');
 Route::post('/admin/candidate/{id}/toggle', [AdminController::class, 'toggleStatus'])->name('admin.candidate.toggle');
+Route::post('/admin/add-votes', [AdminController::class, 'addVotes'])->name('admin.add.votes');

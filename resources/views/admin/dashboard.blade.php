@@ -4,6 +4,28 @@
 <div class="container">
     <h1>Tableau de bord admin</h1>
 
+    <div class="mb-4">
+        <form method="POST" action="{{ route('admin.add.votes') }}" class="row g-3 align-items-end">
+            @csrf
+            <div class="col-auto">
+                <label for="candidate_id" class="form-label">Candidat</label>
+                <select class="form-select" id="candidate_id" name="candidate_id" required>
+                    <option value="">Sélectionner...</option>
+                    @foreach($candidates as $candidate)
+                        <option value="{{ $candidate->id }}">{{ $candidate->name }} ({{ $candidate->phone }})</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-auto">
+                <label for="votes" class="form-label">Nombre de votes à ajouter</label>
+                <input type="number" class="form-control" id="votes" name="votes" min="1" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-success">Ajouter les votes</button>
+            </div>
+        </form>
+    </div>
+
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -64,9 +86,9 @@
                         @endif
                     </td>
                     <td>
-                        <form method="POST" action="{{ route('admin.candidate.toggle', $candidate->id) }}">
+                        <form method="POST" action="{{ route('admin.candidate.toggle', $candidate->id) }}" style="display:inline-block;">
                             @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <button type="submit" class="btn btn-sm btn-outline-primary mb-1">
                                 {{ $candidate->status === 'active' ? 'Mettre en attente' : 'Activer' }}
                             </button>
                         </form>

@@ -3,9 +3,34 @@ namespace App\Http\Controllers;
 
 use App\Models\Candidate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
+    // Permet à l'admin d'ajouter des votes à un candidat donné
+    public function addVotes(Request $request)
+    {
+        $request->validate([
+            'candidate_id' => 'required|exists:candidates,id',
+            'votes' => 'required|integer|min:1',
+        ]);
+        $candidate = \App\Models\Candidate::findOrFail($request->candidate_id);
+        $voteAmount = \App\Models\Setting::getValue('vote_amount', 100);
+        $votesToAdd = $request->votes;
+        $votes = [];
+        for ($i = 0; $i < $votesToAdd; $i++) {
+            $votes[] = [
+                'candidate_id' => $candidate->id,
+                'amount' => $voteAmount,
+                'operator' => 'admin', // opérateur spécial pour votes ajoutés par admin
+                'payment_status' => 'admin', // statut spécial pour votes ajoutés par admin
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+        \App\Models\Vote::insert($votes);
+        return redirect()->route('admin.dashboard')->with('success', 'Votes ajoutés avec succès.');
+    }
     // Affiche la liste de tous les candidats (actifs ou non) avec leur nombre de votes
     public function dashboard(Request $request)
     {
