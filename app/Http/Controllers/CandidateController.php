@@ -36,8 +36,9 @@ class CandidateController extends Controller
     // Affiche le formulaire de candidature
     public function create()
     {
+        $maxCandidates = \App\Models\Setting::getValue('max_candidates', 75);
         $count = Candidate::count();
-        if ($count >= 75) {
+        if ($count >= $maxCandidates) {
             return redirect()->route('vote.index')->withErrors(['limit' => 'Le nombre maximum de candidatures est atteint.']);
         }
         return view('candidate.create');
@@ -53,7 +54,8 @@ class CandidateController extends Controller
             'operator' => 'required|in:orange,moov',
         ]);
 
-        if (Candidate::count() >= 75) {
+        $maxCandidates = \App\Models\Setting::getValue('max_candidates', 75);
+        if (Candidate::count() >= $maxCandidates) {
             return back()->withErrors(['limit' => 'Le nombre maximum de candidatures est atteint.']);
         }
 

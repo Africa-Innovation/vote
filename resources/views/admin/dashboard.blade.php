@@ -20,6 +20,10 @@
                 <input type="number" class="form-control" id="candidature_amount" name="candidature_amount" value="{{ $candidatureAmount }}" min="1" required>
             </div>
             <div class="col-auto">
+                <label for="max_candidates" class="form-label">Limite de candidatures</label>
+                <input type="number" class="form-control" id="max_candidates" name="max_candidates" value="{{ $maxCandidates }}" min="1" required>
+            </div>
+            <div class="col-auto">
                 <button type="submit" class="btn btn-primary">Mettre à jour</button>
             </div>
         </form>
